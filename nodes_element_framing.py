@@ -698,7 +698,14 @@ class Krea2ElementJSONExportV1:
                 "auto_position_hint": ("BOOLEAN", {"default": True}),
                 "strip_bbox": ("BOOLEAN", {"default": True, "tooltip": "Remove numeric bbox coordinates from output so the model does not render them as visible text"}),
                 "auto_depth_hint": ("BOOLEAN", {"default": True, "tooltip": "Add depth/perspective hints to position descriptions (e.g. 'appearing distant', 'in the foreground')"}),
-            }
+            },
+            "optional": {
+                "red_override": ("STRING", {"default": "", "multiline": False, "tooltip": "Dynamic text input for the Red region. Overrides the red_prompt from the Prompt node when non-empty. Wire wildcards or text generators here."}),
+                "blue_override": ("STRING", {"default": "", "multiline": False, "tooltip": "Dynamic text input for the Blue region. Overrides the blue_prompt from the Prompt node when non-empty."}),
+                "yellow_override": ("STRING", {"default": "", "multiline": False, "tooltip": "Dynamic text input for the Yellow region. Overrides the yellow_prompt from the Prompt node when non-empty."}),
+                "green_override": ("STRING", {"default": "", "multiline": False, "tooltip": "Dynamic text input for the Green region. Overrides the green_prompt from the Prompt node when non-empty."}),
+                "magenta_override": ("STRING", {"default": "", "multiline": False, "tooltip": "Dynamic text input for the Magenta region. Overrides the magenta_prompt from the Prompt node when non-empty."}),
+            },
         }
 
     RETURN_TYPES = ("STRING", "INT", "INT")
@@ -706,7 +713,7 @@ class Krea2ElementJSONExportV1:
     FUNCTION = "execute"
     CATEGORY = "Krea2/BBOX Prompter Suite"
 
-    def execute(self, framing_data, prompt_ui_data, bbox_mode="normalized_1000", output_format="compact", output_mode="json_with_safety_hint", skip_empty=True, auto_position_hint=True, strip_bbox=True, auto_depth_hint=True):
+    def execute(self, framing_data, prompt_ui_data, bbox_mode="normalized_1000", output_format="compact", output_mode="json_with_safety_hint", skip_empty=True, auto_position_hint=True, strip_bbox=True, auto_depth_hint=True, red_override="", blue_override="", yellow_override="", green_override="", magenta_override=""):
         fdat = _safe_json_loads(framing_data, {})
         pdat = _safe_json_loads(prompt_ui_data, {})
         width = int(fdat.get("width") or 1024)
@@ -714,6 +721,7 @@ class Krea2ElementJSONExportV1:
         layout = fdat.get("layout") if isinstance(fdat.get("layout"), dict) else {"boxes": []}
         boxes = _layout_boxes(layout)
         slots = pdat.get("slots") if isinstance(pdat.get("slots"), dict) else {}
+        overrides = {"red": red_override, "blue": blue_override, "yellow": yellow_override, "green": green_override, "magenta": magenta_override}
         elements = []
         for box in boxes:
             slot = _clean(box.get("slot")).lower()
@@ -724,6 +732,10 @@ class Krea2ElementJSONExportV1:
             content = _clean(meta.get("prompt"))
             framing = _normalize_framing(meta.get("framing") or "Auto")
             angle = _normalize_angle(meta.get("angle") or "Auto")
+            # Apply dynamic override if provided (piped from another node)
+            override_val = _clean(overrides.get(slot, ""))
+            if override_val:
+                content = override_val
             typ, content = _effective_type_and_content(typ, content)
             bbox = _out_bbox(box, width, height, bbox_mode)
             if not bbox:
