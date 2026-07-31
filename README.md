@@ -2,9 +2,12 @@
 
 <img width="1722" height="868" alt="Krea2 BBOX Prompter Suite" src="https://github.com/user-attachments/assets/4da38a62-cc7d-46b9-8b78-cdad7053eac3" />
 
-[日本語はこちら](#日本語)
+Krea2 BBOX Prompter Suite is a ComfyUI custom-node suite for manually placing BBOX regions and converting them into a Krea2-oriented JSON prompt. Heavily leaning on the implementation by https://github.com/ukr8b3g-cmyk
 
-Krea2 BBOX Prompter Suite is a ComfyUI custom-node suite for manually placing BBOX regions and converting them into a Krea2-oriented JSON prompt.
+Improvements include
+- full natural language option without any JSON making it way into the prompt/image generation
+- better auto-descriptions based on the spatial awareness (e.g. smaller boxes near the top are further set back unless prompted otherwise)
+- Resizing BBOX rectangles much easier now
 
 Draw the layout, write a prompt for each color slot, export the result, and optionally append a style effect or one of the 592 local background presets.
 
